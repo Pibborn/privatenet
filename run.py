@@ -8,8 +8,8 @@ from timeit import default_timer as timer
 import sys
 
 NUM_PARTIES = int(sys.argv[1])
-DATA_LOC = ['input_data_bnetflix.in']
-LABELS_LOC = ['target_values_bnetflix.in']
+DATA_LOC = ['input_data_nlcts.in']
+LABELS_LOC = ['target_values_nlcts.in']
 RANDOM_STATE = 999
 BATCH_SIZE = 32
 N_EPOCHS = 1
@@ -53,25 +53,25 @@ def train(data_splits, enc_model):
             # Print progress every batch:
             #batch_loss = loss_value.get_plain_text()
             end_batch = timer()
-            if i % 10 == 0 or i == 0:
+            if i % 100 == 0 or i == 0:
                 print('Batch time: {}'.format(end_batch-start_batch))
 
 
 
 if __name__ == '__main__':
     crypten.init()
-    for data_loc_single, labels_loc_single in zip(DATA_LOC, LABELS_LOC):
-        df = load_data(data_loc_single, labels_loc_single)
-        splits = split_parties(df, n_parties=NUM_PARTIES, random_state=RANDOM_STATE)
-        n_features = get_n_features(split_x_y(splits[0])[0])
-        nn = Net(n_features)
-        crypten.common.serial.register_safe_class(Net)
-        #torch.set_num_threads(1)
-        dummy_input = torch.empty(1, n_features)
-        model = crypten.nn.from_pytorch(nn, dummy_input)
-        model.encrypt()
-        print('data {} parties {}'.format(data_loc_single, NUM_PARTIES))
-        start = timer()
-        train(splits, model)
-        end = timer()
-        print('Epoch time: {}'.format(end-start))
+    parties = sys.argv[1]
+    df = load_data(data_loc_single, labels_loc_single)
+    splits = split_parties(df, n_parties=parties, random_state=RANDOM_STATE)
+    n_features = get_n_features(split_x_y(splits[0])[0])
+    nn = Net(n_features)
+    crypten.common.serial.register_safe_class(Net)
+    #torch.set_num_threads(1)
+    dummy_input = torch.empty(1, n_features)
+    model = crypten.nn.from_pytorch(nn, dummy_input)
+    model.encrypt()
+    print('data {} parties {}'.format(data_loc_single, sys.argv))
+    start = timer()
+    train(splits, model)
+    end = timer()
+    print('Epoch time: {}'.format(end-start))
